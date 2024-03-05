@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "742015096784",
+    "project_id": "let-hire-heisenberg-compose",
+    "storage_bucket": "let-hire-heisenberg-compose.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742015096784:android:683b6ead571274916bcbd5",
+        "android_client_info": {
+          "package_name": "com.example.lethireheisenbergcompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAX3EJx2d8Uaoqv5nfHozHRGkknHm8JqJI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
