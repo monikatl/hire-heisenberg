@@ -8,11 +8,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var auth: FirebaseAuth
+
+    @Inject
+    lateinit var firestore: FirebaseFirestore
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                NavGraph(navController = rememberNavController())
+                NavGraph(navController = rememberNavController(), auth, firestore)
             }
            //HeisenbergApp()
         }
