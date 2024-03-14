@@ -3,6 +3,7 @@ package com.example.lethireheisenbergcompose.ui.login
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -21,6 +22,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.lethireheisenbergcompose.HeisenbergViewModel
+import com.example.lethireheisenbergcompose.PROFILE_SCREEN
 import com.example.lethireheisenbergcompose.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -30,7 +34,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: LoginViewModel = hiltViewModel(),
+    heisenbergViewModel: HeisenbergViewModel = hiltViewModel()
 ) {
 
     val googleSignInState = viewModel.googleState.value
@@ -86,7 +92,10 @@ fun LoginScreen(
         Button(
             onClick = {
                 scope.launch {
-                    viewModel.loginUser(email, password)
+                    val job = viewModel.loginUser(email, password)
+                    job.join()
+                    // if error !!!!!!!!!!!!!!!!!
+                    navController.navigate(PROFILE_SCREEN)
                 }
             },
             modifier = Modifier
@@ -117,7 +126,7 @@ fun LoginScreen(
             IconButton(onClick = {
                 val gso= GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()
-                   // .requestIdToken(ServerClient)
+                    //.requestIdToken(ServerClient)
                     .build()
 
                 val googleSingInClient = GoogleSignIn.getClient(context, gso)
@@ -126,7 +135,6 @@ fun LoginScreen(
 
             }) {
                 Icon(
-                    // <a target="_blank" href="https://icons8.com/icon/17949/google">Google</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                     painter = painterResource(id = R.drawable.icons8_google),
                     contentDescription = "Google Icon",
                     modifier = Modifier.size(50.dp),
@@ -138,7 +146,6 @@ fun LoginScreen(
 
             }) {
                 Icon(
-                    //<a target="_blank" href="https://icons8.com/icon/13912/facebook">Facebook</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                     painter = painterResource(id = R.drawable.icons8_facebook),
                     contentDescription = "Facebook Icon",
                     modifier = Modifier.size(50.dp),

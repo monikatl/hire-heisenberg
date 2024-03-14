@@ -24,7 +24,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.lethireheisenbergcompose.LOGIN_SCREEN
 import com.example.lethireheisenbergcompose.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SignUpScreen(
@@ -81,7 +83,10 @@ fun SignUpScreen(
         Button(
             onClick = {
                 scope.launch {
-                    viewModel.registerUser(email, password)
+                    val job = viewModel.registerUser(email, password)
+                    job.join()
+                    val name = email.split("@")[0]
+                    viewModel.saveUser(name, email)
                 }
             },
             modifier = Modifier

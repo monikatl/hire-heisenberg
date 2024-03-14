@@ -1,7 +1,7 @@
 package com.example.lethireheisenbergcompose.model
 
-data class User( val userName: String,
-                 val userAge: String,
-                 val userOccupation: String) {
-    constructor(): this("", "", "")
-}
+data class User(
+    var userId: String = "",
+    var name: String = "",
+    var email: String = ""
+)
