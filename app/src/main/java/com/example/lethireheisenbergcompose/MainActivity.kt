@@ -24,19 +24,10 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var firestore: FirebaseFirestore
 
-    val heisenbergViewModel: HeisenbergViewModel by viewModels()
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                NavGraph(navController = rememberNavController(), auth, firestore)
-            }
-           //HeisenbergApp()
+            HeisenbergApp()
         }
     }
 

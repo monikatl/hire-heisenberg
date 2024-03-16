@@ -22,11 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.lethireheisenbergcompose.LOGIN_SCREEN
 import com.example.lethireheisenbergcompose.R
-import kotlinx.coroutines.delay
+import com.example.lethireheisenbergcompose.Screens
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SignUpScreen(
@@ -110,7 +108,7 @@ fun SignUpScreen(
             modifier = Modifier
                 .padding(15.dp)
                 .clickable {
-                    navController.navigate(LOGIN_SCREEN)
+                    navController.navigate(Screens.LOGIN_SCREEN)
                 },
             text = "Jeśli posiadasz już konto Zaloguj się",
             fontWeight = FontWeight.Bold, color = Color.Black

@@ -23,9 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.lethireheisenbergcompose.BottomNavItem
+import com.example.lethireheisenbergcompose.Graph
 import com.example.lethireheisenbergcompose.HeisenbergViewModel
-import com.example.lethireheisenbergcompose.PROFILE_SCREEN
 import com.example.lethireheisenbergcompose.R
+import com.example.lethireheisenbergcompose.Screens
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -95,7 +97,7 @@ fun LoginScreen(
                     val job = viewModel.loginUser(email, password)
                     job.join()
                     // if error !!!!!!!!!!!!!!!!!
-                    navController.navigate(PROFILE_SCREEN)
+                    navController.navigate(Graph.MAIN)
                 }
             },
             modifier = Modifier

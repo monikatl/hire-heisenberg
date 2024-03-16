@@ -1,7 +1,20 @@
 package com.example.lethireheisenbergcompose
 
 
-const val LOGIN_SCREEN = "LoginScreen"
-const val SIGN_UP_SCREEN = "SignUpScreen"
-const val PROFILE_SCREEN = "ProfileScreen"
+object Graph {
+    const val ROOT = "ROOT_GRAPH"
+    const val AUTH = "AUTH_GRAPH"
+    const val MAIN = "MAIN_GRAPH"
+}
+
+
+object Screens {
+    const val LOGIN_SCREEN = "LoginScreen"
+    const val SIGN_UP_SCREEN = "SignUpScreen"
+}
+
+sealed class BottomNavItem(var title:String, var icon:Int, var screen_route:String){
+    object Home : BottomNavItem("Home", R.drawable.my_favorites_svgrepo_com,"HomeScreen")
+    object Profile: BottomNavItem("Profil",R.drawable.user_social_svgrepo_com,"ProfileScreen")
+}
 
