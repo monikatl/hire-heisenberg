@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.example.lethireheisenbergcompose.ui.category.CategoryContainerScreen
 import com.example.lethireheisenbergcompose.ui.home.HomeContent
 import com.example.lethireheisenbergcompose.ui.home.HomeScreen
 import com.example.lethireheisenbergcompose.ui.login.LoginScreen
@@ -42,6 +43,10 @@ fun MainGraph(
 
         composable(BottomNavItem.Profile.screen_route) {
             ProfileScreen()
+        }
+
+        composable("CategoryScreen") {
+            CategoryContainerScreen()
         }
 
         composable(BottomNavItem.Home.screen_route) {

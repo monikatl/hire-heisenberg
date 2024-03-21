@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import androidx.compose.material.*
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusTargetModifierNode
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -25,7 +28,7 @@ fun BottomNavigation(navController: NavHostController) {
     )
     Scaffold(
         bottomBar = {
-            BottomNavigation {
+            BottomNavigation(backgroundColor =  MaterialTheme.colorScheme.primary){
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 items.forEach { screen ->
