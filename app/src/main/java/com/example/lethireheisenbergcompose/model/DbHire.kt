@@ -1,13 +1,13 @@
 package com.example.lethireheisenbergcompose.model
 
 class DbHire (
-    val id: String,
-    val name: String,
-    val service: String,
-    val service_provider: String,
-    val user: String,
-    val counter: Int,
-    val amount: Double,
-    val status: String
+    var id: String = "",
+    var name: String = "",
+    val service: String = "",
+    var service_provider: String = "",
+    var user: String = "",
+    var counter: Int = 0,
+    var amount: Double = 0.0,
+    var status: String = ""
 ) {
 }

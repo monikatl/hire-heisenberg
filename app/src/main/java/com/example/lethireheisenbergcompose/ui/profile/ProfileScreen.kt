@@ -1,6 +1,7 @@
 package com.example.lethireheisenbergcompose.ui.profile
 
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,7 +17,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +30,7 @@ import androidx.compose.material.Card
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,15 +52,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.R
 import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.User
+import com.example.lethireheisenbergcompose.ui.home.GetImageFromGallery
+import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -73,8 +83,9 @@ fun ProfileScreen(
 
         UserDetailsContainer(user)
         WalletContainer(profileViewModel)
-        PendingHireContainer()
+        PendingHireContainer(profileViewModel)
         HireLastHistoryContainer()
+        GetImageFromGallery()
     }
 
 }
@@ -202,7 +213,8 @@ fun WalletContainer(profileViewModel: ProfileViewModel) {
 }
 
 @Composable
-fun HireLastHistoryContainer() {
+fun HireLastHistoryContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
+    val hires by profileViewModel.historyHires.collectAsState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,63 +228,21 @@ fun HireLastHistoryContainer() {
             style = MaterialTheme.typography.bodyLarge
         )
     }
-    LazyRow(
-        modifier = Modifier.size(350.dp, 400.dp),
+    LazyColumn(
+        modifier = Modifier.size(400.dp, 400.dp),
         contentPadding = PaddingValues(16.dp)
     ) {
 
-        val hires: List<Hire> = listOf(
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            )
-        )
         items(hires) { hire ->
             HireLastHistoryItem(hire)
         }
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun PendingHireContainer() {
+fun PendingHireContainer(profileViewModel: ProfileViewModel) {
+    val hires by profileViewModel.pendingHires.collectAsState()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -288,55 +258,10 @@ fun PendingHireContainer() {
     }
     LazyRow(
         modifier = Modifier
-            .height(300.dp)
+            .height(250.dp)
             .fillMaxWidth(),
         contentPadding = PaddingValues(16.dp)
     ) {
-
-        val hires: List<Hire> = listOf(
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            ),
-//            Hire("Nauka gotowania",
-//                Service.COOK,
-//                ServiceProvider(Figure(1,"Walter White", "...", "image", "Heisenberg"), 56.25, true ),
-//                User(),
-//                Duration(5, 5*56.25),
-//                HireStatus.END
-//            )
-        )
         items(hires) { hire ->
             PendingHireItem(hire)
         }
@@ -346,6 +271,8 @@ fun PendingHireContainer() {
 
 @Composable
 fun HireLastHistoryItem(hire: Hire) {
+    val hireViewModel: HireViewModel = hiltViewModel()
+    var showDialog by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -355,37 +282,65 @@ fun HireLastHistoryItem(hire: Hire) {
         elevation = 5.dp,
         backgroundColor = MaterialTheme.colorScheme.onBackground
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.dolar_svgrepo_com),
-                contentDescription = hire.serviceProvider.figure.name,
-                modifier = Modifier
-                    .size(130.dp)
-                    .padding(8.dp),
-                contentScale = ContentScale.Fit,
-            )
-            Column(Modifier.padding(8.dp)) {
-                Text(
-                    text = hire.name,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.inverseOnSurface
+        Column {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AsyncImage(
+                    model = hire.serviceProvider.figure?.img,
+                    contentDescription = hire.serviceProvider.figure?.name,
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(70.dp)
                 )
-                hire.serviceProvider.figure.name?.let {
+                Column(Modifier.padding(8.dp)) {
                     Text(
-                        text = it,
+                        text = hire.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.inverseOnSurface
                     )
+                    hire.serviceProvider.figure?.name?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.inverseOnSurface
+                        )
+                    }
+                }
+                Text(
+                    text = hire.duration.hours.toString() + " h",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.inverseOnSurface
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = hire.duration.amount.toString() + " $",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.inverseOnSurface
+                )
+            }
+
+            Row (modifier = Modifier.fillMaxWidth()) {
+                FilledTonalButton (text = "Ponów") {
+                    showDialog = true
                 }
             }
+
         }
+
+        ConfirmDialog(
+            showDialog = showDialog,
+            title = "Czy chcesz ponownie zatrudnić postać?",
+            onAccept = { hireViewModel.rehire(hire) },
+            onDismiss = { showDialog = false }
+        )
     }
 }
 
 @Composable
-fun PendingHireItem(hire: Hire) {
+fun PendingHireItem(hire: Hire, profileViewModel: ProfileViewModel = hiltViewModel()) {
+    var showDialog by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -396,20 +351,19 @@ fun PendingHireItem(hire: Hire) {
         backgroundColor = MaterialTheme.colorScheme.onBackground
     ) {
         Column(Modifier.padding(8.dp)) {
-            Image(
-                painter = painterResource(id = R.drawable.dolar_svgrepo_com),
-                contentDescription = hire.serviceProvider.figure.name,
+            AsyncImage(
+                model = hire.serviceProvider.figure?.img,
+                contentDescription = hire.serviceProvider.figure?.name,
                 modifier = Modifier
-                    .size(130.dp)
-                    .padding(8.dp),
-                contentScale = ContentScale.Fit,
+                    .width(150.dp)
+                    .height(250.dp)
             )
             Text(
                 text = hire.name,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.inverseOnSurface
             )
-            hire.serviceProvider.figure.name?.let {
+            hire.serviceProvider.figure?.name?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
@@ -418,8 +372,35 @@ fun PendingHireItem(hire: Hire) {
             }
             LinearDeterminateIndicator()
         }
+        FilledTonalButton (text = "Zwolnij") {
+            showDialog = true
+        }
+
+        val localContext = LocalContext.current
+        ConfirmDialog(
+            showDialog = showDialog,
+            title = "Czy na pewno chcesz zwolnić postać?",
+            onAccept = { profileViewModel.endJob(localContext, hire) },
+            onDismiss = { showDialog = false }
+        )
     }
 }
+
+@Composable
+fun FilledTonalButton(text: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        FilledTonalButton(onClick = { onClick() }) {
+            Text(text)
+        }
+    }
+}
+
 
 @Composable
 fun LinearDeterminateIndicator() {
@@ -506,4 +487,34 @@ fun NumberInputDialog(
             }
         )
     }
+}
+
+    @Composable
+    fun ConfirmDialog(
+        showDialog: Boolean,
+        title: String,
+        onAccept: () -> Unit,
+        onDismiss: () -> Unit
+    ) {
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text(title) },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onAccept()
+                            onDismiss()
+                        }
+                    ) {
+                        Text("TAK")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { onDismiss() }) {
+                        Text("NIE")
+                    }
+                }
+            )
+        }
 }

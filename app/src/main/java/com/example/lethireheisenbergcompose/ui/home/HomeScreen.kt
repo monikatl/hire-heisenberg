@@ -269,21 +269,21 @@ fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
 
         Column(Modifier.padding(8.dp)) {
            AsyncImage(
-                model = serviceProvider.figure.img,
-                contentDescription = serviceProvider.figure.name,
+                model = serviceProvider.figure?.img,
+                contentDescription = serviceProvider.figure?.name,
                 modifier = Modifier
                     .width(150.dp)
                     .height(250.dp)
             )
-            serviceProvider.figure.name.let {
+            serviceProvider.figure?.name.let {
                 Text(
-                    text = it,
+                    text = it ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
             Text(
-                text = serviceProvider.figure.nickname,
+                text = serviceProvider.figure?.nickname ?: "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.inverseOnSurface
             )

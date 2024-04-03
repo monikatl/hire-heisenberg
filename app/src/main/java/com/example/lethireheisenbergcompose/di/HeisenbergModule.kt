@@ -1,7 +1,5 @@
 package com.example.lethireheisenbergcompose.di
 
-import android.app.Application
-import androidx.lifecycle.ViewModelProvider
 import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.AuthRepositoryImpl
 import com.example.lethireheisenbergcompose.data.HireRepository
@@ -13,7 +11,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.scopes.ActivityScoped
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -43,8 +40,8 @@ object HeisenbergModule {
 
     @Provides
     @Singleton
-    fun providesHireRepositoryImpl(firebaseFirestore: FirebaseFirestore): HireRepository {
-        return HireRepositoryImpl(firebaseFirestore)
+    fun providesHireRepositoryImpl(firebaseFirestore: FirebaseFirestore, authRepository: AuthRepository): HireRepository {
+        return HireRepositoryImpl(firebaseFirestore, authRepository)
     }
 
 }

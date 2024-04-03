@@ -35,7 +35,7 @@ class HomeViewModel
     private val getCharactersUseCase: GetCharactersUseCase,
     private val quotesRepository: QuotesRepository,
     private val userRepository: UserRepository
-) : MainViewModel(userRepository) {
+) : MainViewModel(userRepository, getCharactersUseCase) {
 
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
@@ -43,54 +43,13 @@ class HomeViewModel
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 
-    val sP =  listOf (
-
-        ServiceProvider(
-            generateId(),
-            Character(1, "Walter White", "09-07-1958",
-                listOf("High School Chemistry Teacher",
-                    "Meth King Pin"),
-                "https://images.amcnetworks.com/amc.com/wp-content/uploads/2015/04/cast_bb_700x1000_walter-white-lg.jpg",
-                "Presumed dead",
-                "Heisenberg",
-                listOf(1, 2, 3, 4, 5), "Bryan Cranston",
-                "Breaking Bad",
-                listOf()), 56.25, true, listOf(Service.SECURITY) ),
-
-        ServiceProvider(
-            generateId(),
-            Character(2, "Jesse Pinkman", "09-24-1984",
-                listOf( "Meth Dealer"),
-                "https://upload.wikimedia.org/wikipedia/en/c/c6/Jesse_Pinkman_S5B.png",
-                "Alive",
-                "Cap n' Cook",
-                listOf(1, 2, 3, 4, 5), "Aaron Paul",
-                "Breaking Bad",
-                listOf()), 70.25, true, listOf(Service.COOK) )
-    )
-
-    private val _serviceProviders = MutableStateFlow(sP)
-    val serviceProviders: StateFlow<List<ServiceProvider>> get() = _serviceProviders
 
     private val _quote = MutableStateFlow(Quote("", ""))
     val quote: StateFlow<Quote> get() = _quote
 
     init {
-        getServiceProviders()
         getQuote()
-    }
-
-
-    private fun getServiceProviders() {
-        viewModelScope.launch {
-            try {
-                val serviceProviders = getCharactersUseCase.invoke()
-                _serviceProviders.value = serviceProviders
-            } catch (e: Exception) {
-
-                e.printStackTrace()
-            }
-        }
+        getUser()
     }
 
     fun getQuote() {

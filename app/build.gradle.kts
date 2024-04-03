@@ -5,6 +5,7 @@ plugins {
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
+    id("kotlinx-serialization")
 }
 
 android {
@@ -69,6 +70,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation("org.mockito:mockito-core:3.12.4")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.3")
+    androidTestImplementation("androidx.arch.core:core-testing:2.1.0")
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -78,6 +82,7 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore-ktx:24.10.3")
 
     implementation("com.google.dagger:hilt-android:2.48")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.50")
     kapt("com.google.dagger:hilt-android-compiler:2.48")
 
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
@@ -91,6 +96,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
+
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
 }
 
 kapt {

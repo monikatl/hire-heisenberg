@@ -37,7 +37,7 @@ fun HireDialog(category: Service, serviceProvider: ServiceProvider, onDismiss: (
         text = {
             Column {
                 Text(
-                    text = serviceProvider.figure.name,
+                    text = serviceProvider.figure?.name ?: "",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))

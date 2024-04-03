@@ -37,19 +37,36 @@ class HireViewModel @Inject constructor(
 
     fun hireServiceProvider() {
         serviceProvider.value?.let { sp ->
-            val duration = Payment(hourCounter.value, cost.value)
+            val payment= Payment(hourCounter.value, cost.value)
             val hire = Hire(
                 generateId(),
-                "blablabla",
+                sp.name,
                 service.value,
                 sp,
                 authRepository.currentUserUid,
-                duration,
+                payment,
                 HireStatus.PENDING
             )
             hireRepository.saveHireData(hire)
             payForService()
         }
+    }
+
+    fun rehire(hire: Hire) {
+        val payment= Payment(hire.duration.hourCounter, hire.duration.amount)
+        val newHire = with(hire) {
+           Hire(
+               generateId(),
+               name,
+               service,
+               serviceProvider,
+               userId,
+               payment,
+               HireStatus.PENDING
+           )
+        }
+        hireRepository.saveHireData(newHire)
+        payForService()
     }
 
     private fun payForService() {
