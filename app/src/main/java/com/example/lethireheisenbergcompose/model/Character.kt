@@ -20,7 +20,7 @@ appearance	array	List of seasons that the character appeared in
 * */
 
 
-
+@Parcelize
 @Serializable
 data class Character (
     val char_id: Int,
@@ -33,7 +33,7 @@ data class Character (
     val appearance: List<Int>,
     val portrayed: String,
     val category: String,
-    val better_call_saul_appearance: List<Int>)  {
+    val better_call_saul_appearance: List<Int>) : Parcelable {
 
 //    companion object {
 //        fun create(): Character {

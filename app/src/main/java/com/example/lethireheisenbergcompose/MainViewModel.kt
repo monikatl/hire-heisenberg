@@ -1,12 +1,15 @@
 package com.example.lethireheisenbergcompose
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Character
+import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.ServiceProvider
 import com.example.lethireheisenbergcompose.model.User
 import com.example.lethireheisenbergcompose.network.breaking_bad_api.GetCharactersUseCase
+import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,6 +52,7 @@ open class MainViewModel @Inject constructor(private val userRepository: UserRep
             _serviceProviders.value = characters.map { ServiceProvider.createServiceProvider(it) }
         }
     }
+
 
 //    fun getServiceProviders() {
 //        viewModelScope.launch {

@@ -38,6 +38,17 @@ class UserRepositoryImpl @Inject constructor(
         emit(user)
     }.flowOn(Dispatchers.IO)
 
+    override fun getWalletDetails(userId: String): Flow<Wallet?> =  flow {
+        var wallet: Wallet? = null
+        val query = firestore.collection("users").whereEqualTo("userId", userId)
+        val documents = query.get().await()
+        val document = documents.documents.firstOrNull()
+        if (document != null && document.exists()) {
+            wallet = document.data?.let { convertDocumentToUser(it) }?.wallet
+        }
+        emit(wallet)
+    }.flowOn(Dispatchers.IO)
+
 
     private fun convertDocumentToUser(userData: Map<String, Any>): User {
         val user = DbUser().apply {

@@ -1,13 +1,16 @@
 package com.example.lethireheisenbergcompose.di
 
+import androidx.work.WorkerFactory
 import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.AuthRepositoryImpl
 import com.example.lethireheisenbergcompose.data.HireRepository
 import com.example.lethireheisenbergcompose.data.HireRepositoryImpl
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.data.UserRepositoryImpl
+import com.example.lethireheisenbergcompose.workers.CountdownWorkerFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +20,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object HeisenbergModule {
+
     @Provides
     @Singleton
     fun providesFirebaseAuth() = FirebaseAuth.getInstance()
@@ -43,5 +47,6 @@ object HeisenbergModule {
     fun providesHireRepositoryImpl(firebaseFirestore: FirebaseFirestore, authRepository: AuthRepository): HireRepository {
         return HireRepositoryImpl(firebaseFirestore, authRepository)
     }
+
 
 }

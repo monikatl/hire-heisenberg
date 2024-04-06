@@ -1,6 +1,12 @@
 package com.example.lethireheisenbergcompose.model
 
-open class Payment (val hours: Int, val amount: Double) {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Parcelize
+@Serializable
+open class Payment (val hours: Int, val amount: Double) : Parcelable {
     var hourCounter: Int = hours
     var amountCounter: Double = amount
 

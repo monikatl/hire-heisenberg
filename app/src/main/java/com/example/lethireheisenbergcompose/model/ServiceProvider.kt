@@ -1,16 +1,21 @@
 package com.example.lethireheisenbergcompose.model
 
+import android.annotation.SuppressLint
+import android.os.Parcelable
 import com.example.lethireheisenbergcompose.utils.generateId
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
-
-class ServiceProvider (
+@SuppressLint("ParcelCreator")
+@Parcelize
+data class ServiceProvider (
     val name: String,
     val figure: Character? = null,
     val rate: Double = 0.0,
     private var isFree: Boolean = true,
     val services: List<Service> = emptyList()
-) {
+) : Parcelable {
     fun hire() {
         this.isFree = false
     }

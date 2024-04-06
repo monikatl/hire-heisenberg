@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,12 +59,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
+import androidx.lifecycle.asFlow
 import androidx.navigation.compose.rememberNavController
+import androidx.work.WorkInfo
 import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.MainGraph
 import com.example.lethireheisenbergcompose.R
@@ -72,6 +79,9 @@ import com.example.lethireheisenbergcompose.ui.BottomNavigation
 import com.example.lethireheisenbergcompose.ui.WalletStatusItem
 import com.example.lethireheisenbergcompose.ui.home.hire.HireDialog
 import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -254,6 +264,7 @@ fun JobSearchBar() {
 
 @Composable
 fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
+    val localContext = LocalContext.current
     val viewModel: HireViewModel = hiltViewModel()
     var showDialog by remember { mutableStateOf(false) }
     Card(
@@ -299,7 +310,7 @@ fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
     if (showDialog)
         HireDialog (categogory, serviceProvider) {
             showDialog = false
-            viewModel.hireServiceProvider()
+            viewModel.hireServiceProvider(localContext)
         }
 }
 

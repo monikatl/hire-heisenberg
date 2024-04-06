@@ -63,7 +63,6 @@ import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.R
 import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.User
-import com.example.lethireheisenbergcompose.ui.home.GetImageFromGallery
 import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -85,7 +84,6 @@ fun ProfileScreen(
         WalletContainer(profileViewModel)
         PendingHireContainer(profileViewModel)
         HireLastHistoryContainer()
-        GetImageFromGallery()
     }
 
 }

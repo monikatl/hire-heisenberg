@@ -75,7 +75,6 @@ class ProfileViewModel @Inject constructor(
         NotificationResolver(context).showNotification("Zlecenie wykonane!", "Postać $name właśnie wykonała zadanie!")
     }
 
-
     private fun resolveServiceProvidersForHires(hire: Hire): Hire {
         serviceProviders.value.forEach { println(it.name) }
         val serviceProvider = serviceProviders.value.firstOrNull() { it.name == hire.serviceProvider.name}

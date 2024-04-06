@@ -1,6 +1,11 @@
 package com.example.lethireheisenbergcompose.model
 
-class Hire (
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Parcelize
+data class Hire (
     val id: String,
     val name: String,
     val service: Service,
@@ -8,7 +13,7 @@ class Hire (
     val userId: String,
     val duration: Payment,
     var status: HireStatus,
-) {
+) : Parcelable {
     fun convertToDbHire(): DbHire {
         return DbHire(id, name, service.serviceName, serviceProvider.name, userId, duration.hours, duration.amount, status.name)
     }

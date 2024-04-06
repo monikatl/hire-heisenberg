@@ -1,54 +1,117 @@
 package com.example.lethireheisenbergcompose.workers
 
-import android.os.CountDownTimer
+import android.content.Context
+import androidx.hilt.work.HiltWorker
+import androidx.lifecycle.LiveData
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.ListenableWorker
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import com.example.lethireheisenbergcompose.model.Payment
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import androidx.work.workDataOf
+import com.example.lethireheisenbergcompose.data.UserRepository
+import com.example.lethireheisenbergcompose.model.Wallet
+import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.delay
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CountdownWorker(context: android.content.Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+
+@HiltWorker
+class CountdownWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val userRepository: UserRepository) :
+    CoroutineWorker(context, params) {
+
+        val context = context
 
     override suspend fun doWork(): Result {
-        val hours = inputData.getInt("hours", 0)
-        val newHours = hours - 1
-        if (newHours >= 0) {
-            // Aktualizuj pozostałą liczbę godzin w interfejsie użytkownika (np. przez LiveData)
-            GlobalScope.launch(Dispatchers.Main) {
-                // Aktualizacja interfejsu użytkownika
-                // W rzeczywistej aplikacji należy używać mechanizmów zarządzania stanem, takich jak ViewModel
-                // Tutaj użyto tylko w celach demonstracyjnych
-                // updateRemainingHours(newHours)
-            }
+        val userId = inputData.getString("userId")
+        val hours = inputData.getLong("hours", 0L)
+        val amount = inputData.getDouble("amount", 0.0)
 
-            // Jeśli pozostały czas wynosi 0, zakończ odliczanie
-            if (newHours == 0) {
-                // Wyślij powiadomienie o zakończeniu odliczania (np. przez NotificationManager)
-            }
+
+        println(this.id)
+        delay(hours)
+        if (userId != null) {
+            pay(amount, userId)
+            sendNotification("Kwota za zlecenie ${hours}h została pobrana: ${amount}$")
         }
-
         return Result.success()
     }
 
-    fun countDownTimer(payment: Payment) {
-        var remainingTime = payment.hourCounter
-        val coroutineScope = CoroutineScope(Dispatchers.Default)
-
-        fun startTimer(seconds: Int) {
-            coroutineScope.launch {
-                val timer = object : CountDownTimer(seconds * 1000L, 1000) {
-                    override fun onTick(millisUntilFinished: Long) {
-                        remainingTime = (millisUntilFinished / 1000).toInt()
-                    }
-
-                    override fun onFinish() {
-                        remainingTime = 0
-                    }
-                }
-                timer.start()
-            }
+    private fun sendNotification(name: String) {
+        NotificationResolver(context).showNotification("Zlecenie wykonane!", "Postać $name właśnie wykonała zadanie!")
+    }
+    private suspend fun pay(amount: Double, userId: String) {
+        val wallet = getWalletFromDatabase(userId)
+        wallet?.let {
+            it.draw(amount)
+            updateWalletInDatabase(userId, it)
         }
     }
+
+    private suspend fun getWalletFromDatabase(userId: String): Wallet? {
+        var wallet: Wallet? = null
+        userRepository.getWalletDetails(userId).collect {
+            wallet = it
+        }
+        return wallet
+    }
+
+    private fun updateWalletInDatabase(userId: String, updatedWallet: Wallet) {
+        userRepository.updateUserWallet(userId, updatedWallet)
+    }
 }
+
+fun scheduleTimerWork(
+    context: Context,
+    userId: String,
+    hours: Long,
+    amount: Double
+): LiveData<WorkInfo> {
+
+    val inputData = workDataOf(
+        "userId" to userId,
+        "hours" to hours,
+        "amount" to amount
+    )
+
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+        .setRequiresBatteryNotLow(true)
+        .build()
+
+    val workRequest = OneTimeWorkRequestBuilder<CountdownWorker>()
+        .setConstraints(constraints)
+        .setInputData(inputData)
+        .setInitialDelay(hours, TimeUnit.MILLISECONDS)
+        .build()
+
+    val workManager = WorkManager.getInstance(context)
+    workManager.enqueue(workRequest)
+    return workManager.getWorkInfoByIdLiveData(workRequest.id)
+}
+
+@Singleton
+class CountdownWorkerFactory @Inject constructor(
+    private val userRepository: UserRepository
+) : WorkerFactory() {
+
+    override fun createWorker(
+        appContext: Context,
+        workerClassName: String,
+        workerParameters: WorkerParameters
+    ): ListenableWorker? {
+        return CountdownWorker(appContext, workerParameters, userRepository)
+    }
+}
+
