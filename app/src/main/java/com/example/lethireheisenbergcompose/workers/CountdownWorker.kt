@@ -14,11 +14,13 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.lethireheisenbergcompose.data.UserRepository
+import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.Wallet
 import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.delay
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,19 +40,14 @@ class CountdownWorker @AssistedInject constructor(
         val hours = inputData.getLong("hours", 0L)
         val amount = inputData.getDouble("amount", 0.0)
 
-
         println(this.id)
         delay(hours)
         if (userId != null) {
             pay(amount, userId)
-            sendNotification("Kwota za zlecenie ${hours}h została pobrana: ${amount}$")
         }
         return Result.success()
     }
 
-    private fun sendNotification(name: String) {
-        NotificationResolver(context).showNotification("Zlecenie wykonane!", "Postać $name właśnie wykonała zadanie!")
-    }
     private suspend fun pay(amount: Double, userId: String) {
         val wallet = getWalletFromDatabase(userId)
         wallet?.let {
@@ -77,7 +74,7 @@ fun scheduleTimerWork(
     userId: String,
     hours: Long,
     amount: Double
-): LiveData<WorkInfo> {
+) : UUID {
 
     val inputData = workDataOf(
         "userId" to userId,
@@ -98,7 +95,7 @@ fun scheduleTimerWork(
 
     val workManager = WorkManager.getInstance(context)
     workManager.enqueue(workRequest)
-    return workManager.getWorkInfoByIdLiveData(workRequest.id)
+    return workRequest.id
 }
 
 @Singleton

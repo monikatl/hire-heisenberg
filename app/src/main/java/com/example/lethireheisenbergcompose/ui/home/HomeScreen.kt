@@ -70,6 +70,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.asFlow
 import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.MainGraph
 import com.example.lethireheisenbergcompose.R
@@ -307,12 +308,14 @@ fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
 
         }
     }
-    if (showDialog)
+    if (showDialog) {
         HireDialog (categogory, serviceProvider) {
             showDialog = false
             viewModel.hireServiceProvider(localContext)
         }
+    }
 }
+
 
 
 

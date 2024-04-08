@@ -2,6 +2,8 @@ package com.example.lethireheisenbergcompose.ui.home.hire
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asFlow
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,36 +50,44 @@ class HireViewModel @Inject constructor(
     private var _hourCounter = MutableStateFlow(1)
     val hourCounter: StateFlow<Int> get() = _hourCounter
 
-    private val _workInfo: MutableLiveData<WorkInfo> = MutableLiveData()
-
-    val workInfo: LiveData<WorkInfo> = _workInfo
-
-
-
-
-    fun hireServiceProvider(context: Context) {
-        serviceProvider.value?.let { sp ->
-            val payment= Payment(hourCounter.value, cost.value)
-            val hire = Hire(
-                generateId(),
-                sp.name,
-                service.value,
-                sp,
-                authRepository.currentUserUid,
-                payment,
-                HireStatus.PENDING
-            )
-            hireRepository.saveHireData(hire)
-            // run worker manager
-            val hours = (payment.hourCounter * 1000).toLong()
-            val amount = payment.amount
-            user.value?.userId?.let {
-                scheduleTimerWork(context, it, hours, amount)
+    private fun observeNewWork(uuid: UUID, hire: Hire, context: Context) {
+        val workManager = WorkManager.getInstance()
+        val workInfoLiveData = workManager.getWorkInfoByIdLiveData(uuid)
+        workInfoLiveData.observeForever {
+            if(it.state.isFinished) {
+                endJob(context, hire)
             }
         }
     }
 
-    fun endJob(context: Context, hire: Hire) {
+
+    fun hireServiceProvider(context: Context) {
+        viewModelScope.launch {
+            serviceProvider.value?.let { sp ->
+                val payment= Payment(hourCounter.value, cost.value)
+                val hire = Hire(
+                    generateId(),
+                    sp.name,
+                    service.value,
+                    sp,
+                    authRepository.currentUserUid,
+                    payment,
+                    HireStatus.PENDING
+                )
+                hireRepository.saveHireData(hire)
+
+                // run worker manager
+                val hours = (payment.hourCounter * 1000).toLong()
+                val amount = payment.amount
+                user.value?.userId?.let {
+                    val uuid = scheduleTimerWork(context, it, hours, amount)
+                    observeNewWork(uuid, hire, context)
+                }
+            }
+        }
+    }
+
+    private fun endJob(context: Context, hire: Hire) {
         viewModelScope.launch {
             hire.endJob()
             hireRepository.updateHireData(hire.id, "status", hire.status.name)

@@ -45,7 +45,7 @@ open class MainViewModel @Inject constructor(private val userRepository: UserRep
         }
     }
 
-    private fun fetchCharacters() {
+    fun fetchCharacters() {
         viewModelScope.launch(Dispatchers.IO) {
             val json = URL("https://gist.githubusercontent.com/glitchedmob/373e1ebf69d2c90cbf1a98322b0d77b7/raw/2ab6ab26f6dd9b763ff9fe725454ed7e4492f80d/breakingbadcharacters.json").readText()
             val characters = Json.decodeFromString<List<Character>>(json)

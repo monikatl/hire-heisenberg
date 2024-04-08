@@ -66,7 +66,6 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             hire.endJob()
             hireRepository.updateHireData(hire.id, "status", hire.status.name)
-            getHires()
             sendNotification(context, hire.serviceProvider.name)
         }
     }
