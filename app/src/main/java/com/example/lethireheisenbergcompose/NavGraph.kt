@@ -1,5 +1,7 @@
 package com.example.lethireheisenbergcompose
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -31,6 +33,7 @@ fun RootNavGraph(
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainGraph(
     navController: NavHostController = rememberNavController()

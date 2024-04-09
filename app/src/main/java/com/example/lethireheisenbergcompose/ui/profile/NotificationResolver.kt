@@ -53,7 +53,7 @@ class NotificationResolver(private val context: Context) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(content)
-            .setSmallIcon(R.drawable.completed_checkmark_done_complete_svgrepo_com)
+            .setSmallIcon(R.drawable.cook_hat_svgrepo_com)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

@@ -2,7 +2,7 @@ package com.example.lethireheisenbergcompose.ui.profile
 
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.shapes.Shape
+
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -43,6 +43,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -55,9 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -69,24 +68,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.R
 import com.example.lethireheisenbergcompose.model.Hire
-import com.example.lethireheisenbergcompose.model.HireStatus
 import com.example.lethireheisenbergcompose.model.Operation
 import com.example.lethireheisenbergcompose.model.OperationType
 import com.example.lethireheisenbergcompose.model.User
+import com.example.lethireheisenbergcompose.ui.home.HomeViewModel
 import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
 import com.example.lethireheisenbergcompose.utils.showFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-
     val user = profileViewModel.user.collectAsState(initial = null)
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -100,18 +101,13 @@ fun ProfileScreen(
 }
 
 @Composable
-fun UserDetailsContainer(user: State<User?>, nestedScrollInteropConnection: NestedScrollConnection = rememberNestedScrollInteropConnection()) {
-    val scrollState = rememberScrollState()
+fun UserDetailsContainer(user: State<User?>) {
     BoxWithConstraints(
         modifier = Modifier
-            .nestedScroll(nestedScrollInteropConnection)
             .systemBarsPadding()
     ) {
         Surface {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState),
-            ) {
+            Column {
                 ProfileHeader(
                     user.value,
                     this@BoxWithConstraints.maxHeight
@@ -144,9 +140,11 @@ private fun ProfileHeader(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WalletContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
+fun WalletContainer(homeViewModel: HomeViewModel = hiltViewModel(), profileViewModel: ProfileViewModel = hiltViewModel()) {
+    homeViewModel.getWallet()
 
-    val user = profileViewModel.user.collectAsState(initial = null)
+    val wallet by homeViewModel.wallet.collectAsState(initial = null)
+
 
     val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
 
@@ -185,12 +183,12 @@ fun WalletContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
             }
             Row (modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Text(
-                    text = user.value?.wallet?.contents?.toString() ?: "0.0",
+                    text = wallet?.contents?.toString() ?: "0.0",
                     fontSize = 35.sp
                 )
                 Icon(
                     painter = painterResource(id =
-                    when(user.value?.wallet?.currency?.name) {
+                    when(wallet?.currency?.name) {
                         "USD" -> R.drawable.dolar_svgrepo_com
                         "PLN" -> R.drawable.z_
                         "EUR" -> R.drawable.pay_money_svgrepo_com
@@ -231,10 +229,8 @@ fun WalletContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
                 onNumberEntered = onNumberEntered
             )
         }
-
     }
-
-    LaunchedEffect(user) {
+    LaunchedEffect (wallet) {
 
     }
 }
@@ -244,22 +240,32 @@ fun WalletContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
 fun OperationsHistoryList(profileViewModel: ProfileViewModel = hiltViewModel()) {
     profileViewModel.getOperations()
     val history = profileViewModel.operationHistory.collectAsState()
-    
+    val setShowAllHistory = remember { mutableStateOf(false) }
+
     Column {
+        OutlinedButton(onClick = { setShowAllHistory.value = !setShowAllHistory.value} ) {
+            Text(text = if(setShowAllHistory.value) "Ukyryj" else "Pokaż pełną historię")
+        }
+        Spacer(modifier = Modifier.size(16.dp))
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
 
-            items(history.value.sortedBy { it.date }.reversed().take(3)) { operation ->
+            items(
+                if(setShowAllHistory.value)
+                    history.value
+                else history.value.sortedBy { it.date }.reversed().take(3)
+            ) { operation ->
                 OperationItem(operation)
             }
         }
-        Spacer(modifier = Modifier.size(16.dp))
-        OutlinedButton(onClick = { /*TODO*/ }) {
-            Text(text = "Przejdź do historii")
-        }
+    }
+    LaunchedEffect (history.value){
+
     }
 }
 
@@ -270,7 +276,7 @@ fun OperationItem(operation: Operation) {
         modifier = Modifier
             .clickable { }
             .fillMaxWidth()
-            .border(1.dp, Color.Red , CircleShape)
+            .border(1.dp, Color.Red, CircleShape)
             .padding(16.dp)
 
     ) {
@@ -303,7 +309,7 @@ fun HireLastHistoryContainer(profileViewModel: ProfileViewModel = hiltViewModel(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(vertical = 25.dp),
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -326,12 +332,13 @@ fun HireLastHistoryContainer(profileViewModel: ProfileViewModel = hiltViewModel(
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun PendingHireContainer(profileViewModel: ProfileViewModel) {
+    profileViewModel.getHires()
     val hires by profileViewModel.pendingHires.collectAsState()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(vertical = 8.dp),
+            .wrapContentHeight(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -340,15 +347,19 @@ fun PendingHireContainer(profileViewModel: ProfileViewModel) {
             style = MaterialTheme.typography.bodyLarge
         )
     }
-    LazyRow(
-        modifier = Modifier
-            .height(250.dp)
-            .fillMaxWidth(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        items(hires) { hire ->
-            PendingHireItem(hire)
+        LazyRow(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(hires) { hire ->
+                PendingHireItem(hire)
+            }
         }
+
+    LaunchedEffect (hires) {
+
     }
 }
 
@@ -359,7 +370,7 @@ fun HireLastHistoryItem(hire: Hire) {
     var showDialog by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
-            .padding(10.dp)
+            .padding(4.dp)
             .fillMaxWidth()
             .wrapContentHeight(),
         shape = MaterialTheme.shapes.medium,

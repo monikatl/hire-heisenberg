@@ -3,15 +3,18 @@ package com.example.lethireheisenbergcompose
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Character
 import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.ServiceProvider
 import com.example.lethireheisenbergcompose.model.User
+import com.example.lethireheisenbergcompose.model.Wallet
 import com.example.lethireheisenbergcompose.network.breaking_bad_api.GetCharactersUseCase
 import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,17 +24,24 @@ import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 
 @HiltViewModel
-open class MainViewModel @Inject constructor(private val userRepository: UserRepository, private val getCharactersUseCase: GetCharactersUseCase? = null) : ViewModel() {
+open class MainViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
 
     protected val _user: MutableStateFlow<User?> = MutableStateFlow(null)
     val user: StateFlow<User?> = _user
+
+    protected val _wallet: MutableStateFlow<Wallet?> = MutableStateFlow(null)
+    val wallet: StateFlow<Wallet?> = _wallet
 
     private val _serviceProviders = MutableStateFlow(listOf<ServiceProvider>())
     val serviceProviders: StateFlow<List<ServiceProvider>> get() = _serviceProviders
 
     init {
         getUser()
+        getWallet()
         //getServiceProviders()
         fetchCharacters()
     }
@@ -40,6 +50,14 @@ open class MainViewModel @Inject constructor(private val userRepository: UserRep
         viewModelScope.launch {
             userRepository.getUserDetails().collect { fetchedUser ->
                 _user.value = fetchedUser
+            }
+        }
+    }
+
+    fun getWallet() {
+        viewModelScope.launch {
+            userRepository.getWalletDetails(authRepository.currentUserUid).collect {
+                _wallet.value = it
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.viewModelScope
 import com.example.lethireheisenbergcompose.MainViewModel
 import com.example.lethireheisenbergcompose.R
+import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.HireRepository
 import com.example.lethireheisenbergcompose.data.OperationRepository
 import com.example.lethireheisenbergcompose.data.UserRepository
@@ -12,7 +13,10 @@ import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.HireStatus
 import com.example.lethireheisenbergcompose.model.Operation
 import com.example.lethireheisenbergcompose.model.ServiceProvider
+import com.example.lethireheisenbergcompose.model.User
+import com.example.lethireheisenbergcompose.model.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,8 +26,11 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val hireRepository: HireRepository,
-    private val operationRepository: OperationRepository
-) : MainViewModel(userRepository) {
+    private val operationRepository: OperationRepository,
+    private val authRepository: AuthRepository
+) : MainViewModel(userRepository, authRepository) {
+
+
 
     private var _hires = MutableStateFlow(emptyList<Hire>())
     val hires: StateFlow<List<Hire>> get() = _hires
@@ -34,11 +41,10 @@ class ProfileViewModel @Inject constructor(
     private var _historyHires = MutableStateFlow(emptyList<Hire>())
     val historyHires: StateFlow<List<Hire>> get() = _historyHires
 
-    private var _operationsHistory = MutableStateFlow(emptyList<Operation>())
+    var _operationsHistory = MutableStateFlow(emptyList<Operation>())
     val operationHistory: StateFlow<List<Operation>> get() = _operationsHistory
 
     init {
-        getUser()
         getHires()
     }
 
@@ -47,10 +53,10 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun inputMoney(amount: Double) {
-        _user.value?.let { user ->
+        _wallet.value?.let { wallet ->
             viewModelScope.launch {
-                val wallet = user.wallet.deposit(amount)
-                userRepository.updateUserWallet(user.userId, wallet)
+                val newWallet = wallet.deposit(amount)
+                userRepository.updateUserWallet(authRepository.currentUserUid, newWallet)
                 wallet.lastOperation?.let {
                     operationRepository.saveOperationData(it)
                 }
@@ -86,7 +92,6 @@ class ProfileViewModel @Inject constructor(
             hire.endJob()
             hireRepository.updateHireData(hire.id, "status", hire.status.name)
             sendNotification(context, hire.serviceProvider.name)
-            getUser()
         }
     }
 
@@ -95,7 +100,6 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun resolveServiceProvidersForHires(hire: Hire): Hire {
-        serviceProviders.value.forEach { println(it.name) }
         val serviceProvider = serviceProviders.value.firstOrNull() { it.name == hire.serviceProvider.name}
         hire.serviceProvider = serviceProvider ?: ServiceProvider("nikt")
         return hire

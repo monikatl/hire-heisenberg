@@ -19,14 +19,14 @@ import com.example.lethireheisenbergcompose.ui.home.HomeViewModel
 
 @Composable
 fun WalletStatusItem(homeViewModel: HomeViewModel = hiltViewModel()) {
-    homeViewModel.getUser()
-    val user = homeViewModel.user.collectAsState(null)
+    homeViewModel.getWallet()
+    val wallet by homeViewModel.wallet.collectAsState(null)
 
-    val wallet = ImageVector.vectorResource(id = R.drawable.wallet_cash_svgrepo_com)
+    val walletImg = ImageVector.vectorResource(id = R.drawable.wallet_cash_svgrepo_com)
     val currency = ImageVector.vectorResource(id = R.drawable.dolar_svgrepo_com)
-    Icon(imageVector = wallet, contentDescription = null)
+    Icon(imageVector = walletImg, contentDescription = null)
     Spacer(modifier = Modifier.width(16.dp))
-    Text(text = user.value?.wallet?.contents.toString(), fontSize = 18.sp)
+    Text(text = wallet?.contents.toString(), fontSize = 18.sp)
     Spacer(modifier = Modifier.width(8.dp))
     Icon(imageVector = currency, contentDescription = null)
     Spacer(modifier = Modifier.width(4.dp))

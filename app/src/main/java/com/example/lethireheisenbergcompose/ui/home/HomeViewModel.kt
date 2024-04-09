@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.lethireheisenbergcompose.MainViewModel
+import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Character
 import com.example.lethireheisenbergcompose.model.Quote
@@ -32,10 +33,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
-    private val getCharactersUseCase: GetCharactersUseCase,
     private val quotesRepository: QuotesRepository,
-    private val userRepository: UserRepository
-) : MainViewModel(userRepository, getCharactersUseCase) {
+    private val userRepository: UserRepository,
+    val authRepository: AuthRepository
+) : MainViewModel(userRepository, authRepository) {
 
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
