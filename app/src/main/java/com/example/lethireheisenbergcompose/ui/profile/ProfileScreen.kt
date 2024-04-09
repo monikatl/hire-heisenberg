@@ -2,7 +2,11 @@ package com.example.lethireheisenbergcompose.ui.profile
 
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.shapes.Shape
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -27,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -49,6 +54,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -62,8 +69,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.lethireheisenbergcompose.R
 import com.example.lethireheisenbergcompose.model.Hire
+import com.example.lethireheisenbergcompose.model.HireStatus
+import com.example.lethireheisenbergcompose.model.Operation
+import com.example.lethireheisenbergcompose.model.OperationType
 import com.example.lethireheisenbergcompose.model.User
 import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
+import com.example.lethireheisenbergcompose.utils.showFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -81,7 +92,7 @@ fun ProfileScreen(
     ) {
 
         UserDetailsContainer(user)
-        WalletContainer(profileViewModel)
+        WalletContainer()
         PendingHireContainer(profileViewModel)
         HireLastHistoryContainer()
     }
@@ -131,12 +142,15 @@ private fun ProfileHeader(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WalletContainer(profileViewModel: ProfileViewModel) {
+fun WalletContainer(profileViewModel: ProfileViewModel = hiltViewModel()) {
 
     val user = profileViewModel.user.collectAsState(initial = null)
 
     val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
+
+    val setShowHistory = remember { mutableStateOf(false) }
 
     val (enteredNumber, setEnteredNumber) = remember { mutableStateOf(0.0) }
 
@@ -198,7 +212,18 @@ fun WalletContainer(profileViewModel: ProfileViewModel) {
 
                     contentDescription = "input"
                 )
+                Spacer(modifier = Modifier.size(16.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.history_svgrepo_com),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable { setShowHistory.value = !setShowHistory.value },
+                    contentDescription = "input"
+                )
             }
+
+            if(setShowHistory.value)
+                OperationsHistoryList()
 
             NumberInputDialog(
                 showDialog = showDialog,
@@ -207,6 +232,67 @@ fun WalletContainer(profileViewModel: ProfileViewModel) {
             )
         }
 
+    }
+
+    LaunchedEffect(user) {
+
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun OperationsHistoryList(profileViewModel: ProfileViewModel = hiltViewModel()) {
+    profileViewModel.getOperations()
+    val history = profileViewModel.operationHistory.collectAsState()
+    
+    Column {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+
+            items(history.value.sortedBy { it.date }.reversed().take(3)) { operation ->
+                OperationItem(operation)
+            }
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        OutlinedButton(onClick = { /*TODO*/ }) {
+            Text(text = "Przejdź do historii")
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun OperationItem(operation: Operation) {
+    Column (
+        modifier = Modifier
+            .clickable { }
+            .fillMaxWidth()
+            .border(1.dp, Color.Red , CircleShape)
+            .padding(16.dp)
+
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(id =
+                    when(operation.type) {
+                        OperationType.DEPOSIT -> R.drawable.money_deposit_money_deposit_account_svgrepo_com
+                        OperationType.DRAW -> R.drawable.cash_payment_pay_money_cash_svgrepo_com
+            }) , contentDescription = null )
+            Text(
+                text = operation.date.showFormat(),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.size(16.dp))
+            Text(
+                text = operation.amount.toString() + " $",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 
@@ -368,11 +454,10 @@ fun PendingHireItem(hire: Hire, profileViewModel: ProfileViewModel = hiltViewMod
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
-            LinearDeterminateIndicator()
+            LinearDeterminateIndicator(hire.duration.hourCounter)
         }
-        FilledTonalButton (text = "Zwolnij") {
-            showDialog = true
-        }
+
+        FilledTonalButton (text = "Zwolnij") { showDialog = true }
 
         val localContext = LocalContext.current
         ConfirmDialog(
@@ -400,10 +485,11 @@ fun FilledTonalButton(text: String, onClick: () -> Unit) {
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun LinearDeterminateIndicator() {
+fun LinearDeterminateIndicator(duration: Int) {
     var currentProgress by remember { mutableStateOf(0f) }
-    var loading by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope() // Create a coroutine scope
 
     Column(
@@ -411,19 +497,13 @@ fun LinearDeterminateIndicator() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Button(onClick = {
-            loading = true
+        if (loading) {
             scope.launch {
-                loadProgress { progress ->
+                loadProgress (duration) { progress ->
                     currentProgress = progress
                 }
-                loading = false // Reset loading when the coroutine finishes
+                loading = false
             }
-        }, enabled = !loading) {
-            Text("Zwolnij")
-        }
-
-        if (loading) {
             LinearProgressIndicator(
                 progress = { currentProgress },
                 modifier = Modifier.fillMaxWidth(),
@@ -433,10 +513,10 @@ fun LinearDeterminateIndicator() {
 }
 
 /** Iterate the progress value */
-suspend fun loadProgress(updateProgress: (Float) -> Unit) {
-    for (i in 1..100) {
-        updateProgress(i.toFloat() / 100)
-        delay(100)
+suspend fun loadProgress(duration: Int, updateProgress: (Float) -> Unit) {
+    for (i in 1..duration) {
+        updateProgress(i.toFloat() / 1)
+        delay(10)
     }
 }
 
@@ -515,4 +595,4 @@ fun NumberInputDialog(
                 }
             )
         }
-}
+    }

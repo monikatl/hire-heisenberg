@@ -9,17 +9,34 @@ import javax.money.UnknownCurrencyException
 
 class Wallet {
 
-    private var id: String = generateId()
+    var id: String = generateId()
     var currency: Currency = Currency.PLN
     var contents: Double = 0.0
 
+    var lastOperation: Operation? = null
+
+    val history: List<Operation> = emptyList()
+
+
     fun deposit(amount: Double): Wallet {
         contents += amount
+        lastOperation = addOperationToHistory(amount, OperationType.DEPOSIT)
         return this
     }
 
-    fun draw(amount: Double) {
+    fun draw(amount: Double): Wallet {
         contents -= amount
+        lastOperation = addOperationToHistory(amount, OperationType.DRAW)
+        return this
+    }
+
+    private fun addOperationToHistory(amount: Double, type: OperationType): Operation? {
+        val operation = Operation(id, type, amount)
+        return if (history.toMutableList().add(operation))
+            operation
+        else
+            null
+
     }
 
     private fun createMonetaryAmount(amount: Long, currency: CurrencyUnit): MonetaryAmount {

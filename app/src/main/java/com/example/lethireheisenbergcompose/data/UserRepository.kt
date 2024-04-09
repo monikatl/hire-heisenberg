@@ -1,6 +1,5 @@
 package com.example.lethireheisenbergcompose.data
 
-import com.example.lethireheisenbergcompose.model.DbUser
 import com.example.lethireheisenbergcompose.model.User
 import com.example.lethireheisenbergcompose.model.Wallet
 import kotlinx.coroutines.flow.Flow

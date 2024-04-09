@@ -75,7 +75,6 @@ class UserRepositoryImpl @Inject constructor(
             this.email = email
         }.convertToDbUser()
         firestore.collection("users").add(userData)
-
     }
 
     override fun deleteUser() {

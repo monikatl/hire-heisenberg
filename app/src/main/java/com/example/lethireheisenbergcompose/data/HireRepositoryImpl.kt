@@ -25,7 +25,6 @@ class HireRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateHireData(hireId: String, changedField: String, newValue: String) {
-        println("III -- $hireId")
         val query = firestore.collection("hires").whereEqualTo("id", hireId)
         val document = query.get().await().first()
         val hireRef = firestore.collection("hires").document(document.id)

@@ -13,13 +13,19 @@ import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.example.lethireheisenbergcompose.data.OperationRepository
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Hire
+import com.example.lethireheisenbergcompose.model.Operation
 import com.example.lethireheisenbergcompose.model.Wallet
 import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -30,11 +36,13 @@ import javax.inject.Singleton
 class CountdownWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val userRepository: UserRepository) :
+    private val userRepository: UserRepository,
+    private val operationRepository: OperationRepository) :
     CoroutineWorker(context, params) {
 
         val context = context
 
+    private val lock = Any()
     override suspend fun doWork(): Result {
         val userId = inputData.getString("userId")
         val hours = inputData.getLong("hours", 0L)
@@ -42,17 +50,25 @@ class CountdownWorker @AssistedInject constructor(
 
         println(this.id)
         delay(hours)
-        if (userId != null) {
-            pay(amount, userId)
+        synchronized(lock) {
+            if (userId != null) {
+                pay(amount, userId)
+            }
         }
         return Result.success()
     }
 
-    private suspend fun pay(amount: Double, userId: String) {
-        val wallet = getWalletFromDatabase(userId)
-        wallet?.let {
-            it.draw(amount)
-            updateWalletInDatabase(userId, it)
+
+    private fun pay(amount: Double, userId: String) {
+        GlobalScope.launch {
+            val wall = getWalletFromDatabase(userId)
+            wall?.let { wallet ->
+                wallet.draw(amount)
+                updateWalletInDatabase(userId, wallet)
+                wallet.lastOperation?.let { operation ->
+                    addDrawOperationToRepository(operation)
+                }
+            }
         }
     }
 
@@ -66,6 +82,10 @@ class CountdownWorker @AssistedInject constructor(
 
     private fun updateWalletInDatabase(userId: String, updatedWallet: Wallet) {
         userRepository.updateUserWallet(userId, updatedWallet)
+    }
+
+    private fun addDrawOperationToRepository(operation: Operation) {
+        operationRepository.saveOperationData(operation)
     }
 }
 
@@ -100,7 +120,8 @@ fun scheduleTimerWork(
 
 @Singleton
 class CountdownWorkerFactory @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val operationRepository: OperationRepository
 ) : WorkerFactory() {
 
     override fun createWorker(
@@ -108,7 +129,7 @@ class CountdownWorkerFactory @Inject constructor(
         workerClassName: String,
         workerParameters: WorkerParameters
     ): ListenableWorker? {
-        return CountdownWorker(appContext, workerParameters, userRepository)
+        return CountdownWorker(appContext, workerParameters, userRepository, operationRepository)
     }
 }
 

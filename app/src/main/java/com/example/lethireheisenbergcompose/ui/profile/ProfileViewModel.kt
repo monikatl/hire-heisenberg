@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.lethireheisenbergcompose.MainViewModel
 import com.example.lethireheisenbergcompose.R
 import com.example.lethireheisenbergcompose.data.HireRepository
+import com.example.lethireheisenbergcompose.data.OperationRepository
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.HireStatus
+import com.example.lethireheisenbergcompose.model.Operation
 import com.example.lethireheisenbergcompose.model.ServiceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val hireRepository: HireRepository
+    private val hireRepository: HireRepository,
+    private val operationRepository: OperationRepository
 ) : MainViewModel(userRepository) {
 
     private var _hires = MutableStateFlow(emptyList<Hire>())
@@ -30,6 +33,9 @@ class ProfileViewModel @Inject constructor(
 
     private var _historyHires = MutableStateFlow(emptyList<Hire>())
     val historyHires: StateFlow<List<Hire>> get() = _historyHires
+
+    private var _operationsHistory = MutableStateFlow(emptyList<Operation>())
+    val operationHistory: StateFlow<List<Operation>> get() = _operationsHistory
 
     init {
         getUser()
@@ -45,6 +51,9 @@ class ProfileViewModel @Inject constructor(
             viewModelScope.launch {
                 val wallet = user.wallet.deposit(amount)
                 userRepository.updateUserWallet(user.userId, wallet)
+                wallet.lastOperation?.let {
+                    operationRepository.saveOperationData(it)
+                }
             }
         }
     }
@@ -62,11 +71,22 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun getOperations() {
+        viewModelScope.launch {
+            user.value?.wallet?.id?.let {
+                operationRepository.getWalletOperations(it).collect { list ->
+                    _operationsHistory.value = list
+                }
+            }
+        }
+    }
+
     fun endJob(context: Context, hire: Hire) {
         viewModelScope.launch {
             hire.endJob()
             hireRepository.updateHireData(hire.id, "status", hire.status.name)
             sendNotification(context, hire.serviceProvider.name)
+            getUser()
         }
     }
 

@@ -19,7 +19,9 @@ import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.HireStatus
 import com.example.lethireheisenbergcompose.model.Service
 import com.example.lethireheisenbergcompose.model.ServiceProvider
+import com.example.lethireheisenbergcompose.ui.home.HomeViewModel
 import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
+import com.example.lethireheisenbergcompose.ui.profile.ProfileViewModel
 import com.example.lethireheisenbergcompose.utils.generateId
 import com.example.lethireheisenbergcompose.workers.scheduleTimerWork
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,18 +52,19 @@ class HireViewModel @Inject constructor(
     private var _hourCounter = MutableStateFlow(1)
     val hourCounter: StateFlow<Int> get() = _hourCounter
 
-    private fun observeNewWork(uuid: UUID, hire: Hire, context: Context) {
+    private fun observeNewWork(uuid: UUID, hire: Hire, context: Context, onComplete: () -> Unit) {
         val workManager = WorkManager.getInstance()
         val workInfoLiveData = workManager.getWorkInfoByIdLiveData(uuid)
         workInfoLiveData.observeForever {
             if(it.state.isFinished) {
                 endJob(context, hire)
+                onComplete.invoke()
             }
         }
     }
 
 
-    fun hireServiceProvider(context: Context) {
+    fun hireServiceProvider(context: Context, onComplete: () -> Unit) {
         viewModelScope.launch {
             serviceProvider.value?.let { sp ->
                 val payment= Payment(hourCounter.value, cost.value)
@@ -81,7 +84,7 @@ class HireViewModel @Inject constructor(
                 val amount = payment.amount
                 user.value?.userId?.let {
                     val uuid = scheduleTimerWork(context, it, hours, amount)
-                    observeNewWork(uuid, hire, context)
+                    observeNewWork(uuid, hire, context) { onComplete() }
                 }
             }
         }
@@ -117,11 +120,13 @@ class HireViewModel @Inject constructor(
     }
 
     private fun payForService() {
-        val wallet = user.value?.wallet
-        wallet?.let {
-            // pay all at start
-            it.draw(cost.value)
-            userRepository.updateUserWallet(authRepository.currentUserUid, it)
+        viewModelScope.launch {
+            val wallet = user.value?.wallet
+            wallet?.let {
+                // pay all at start
+                it.draw(cost.value)
+                userRepository.updateUserWallet(authRepository.currentUserUid, it)
+            }
         }
     }
 
@@ -140,24 +145,4 @@ class HireViewModel @Inject constructor(
     fun setServiceProvider(serviceProvider: ServiceProvider) {
         _serviceProvider.value = serviceProvider
     }
-
-//    fun observeWorkInfo() {
-//        viewModelScope.launch {
-//            supervisorScope {
-//                launch {
-//                    Log.d("TAG", "WorkRequest - state observation - start")
-//                    workInfo.asFlow().collect {
-//                        Log.d("TAG", "WorkRequest - ${it?.state?.name!!}")
-//                        if (it.state.isFinished) {
-//                            Log.d("TAG", "WorkRequest - Work finished")
-//                            cancel() // cancel the supervisorScope, it is now redundant
-//                        }
-//                    }
-//                }
-//            }.invokeOnCompletion {
-//                Log.d("TAG", "WorkRequest - state observation - end")
-//            }
-//        }
-//    }
-
 }

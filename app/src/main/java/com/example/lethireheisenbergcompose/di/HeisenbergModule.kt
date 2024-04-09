@@ -5,6 +5,8 @@ import com.example.lethireheisenbergcompose.data.AuthRepository
 import com.example.lethireheisenbergcompose.data.AuthRepositoryImpl
 import com.example.lethireheisenbergcompose.data.HireRepository
 import com.example.lethireheisenbergcompose.data.HireRepositoryImpl
+import com.example.lethireheisenbergcompose.data.OperationRepository
+import com.example.lethireheisenbergcompose.data.OperationRepositoryImpl
 import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.data.UserRepositoryImpl
 import com.example.lethireheisenbergcompose.workers.CountdownWorkerFactory
@@ -46,6 +48,12 @@ object HeisenbergModule {
     @Singleton
     fun providesHireRepositoryImpl(firebaseFirestore: FirebaseFirestore, authRepository: AuthRepository): HireRepository {
         return HireRepositoryImpl(firebaseFirestore, authRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun providesOperationRepositoryImpl(firebaseFirestore: FirebaseFirestore): OperationRepository {
+        return OperationRepositoryImpl(firebaseFirestore)
     }
 
 

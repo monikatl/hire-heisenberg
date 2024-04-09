@@ -30,7 +30,6 @@ open class MainViewModel @Inject constructor(private val userRepository: UserRep
     private val _serviceProviders = MutableStateFlow(listOf<ServiceProvider>())
     val serviceProviders: StateFlow<List<ServiceProvider>> get() = _serviceProviders
 
-
     init {
         getUser()
         //getServiceProviders()

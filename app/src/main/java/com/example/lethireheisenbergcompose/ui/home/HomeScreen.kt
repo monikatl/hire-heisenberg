@@ -80,6 +80,7 @@ import com.example.lethireheisenbergcompose.ui.BottomNavigation
 import com.example.lethireheisenbergcompose.ui.WalletStatusItem
 import com.example.lethireheisenbergcompose.ui.home.hire.HireDialog
 import com.example.lethireheisenbergcompose.ui.home.hire.HireViewModel
+import com.example.lethireheisenbergcompose.ui.profile.ProfileViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -193,6 +194,7 @@ fun ServiceProvidersContainer(category: Service,  serviceProviders: List<Service
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(homeViewModel: HomeViewModel = hiltViewModel()) {
+    val user = homeViewModel.user.collectAsState(null)
     TopAppBar(
         title = {
             Row(
@@ -208,7 +210,7 @@ fun HomeTopBar(homeViewModel: HomeViewModel = hiltViewModel()) {
                         .clip(CircleShape)
                 ) {}
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "name")
+                Text(text = user.value?.email ?: "")
             }
         },
         actions = { WalletStatusItem() },
@@ -267,6 +269,7 @@ fun JobSearchBar() {
 fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
     val localContext = LocalContext.current
     val viewModel: HireViewModel = hiltViewModel()
+    val profileViewModel: ProfileViewModel = hiltViewModel()
     var showDialog by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
@@ -311,7 +314,7 @@ fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
     if (showDialog) {
         HireDialog (categogory, serviceProvider) {
             showDialog = false
-            viewModel.hireServiceProvider(localContext)
+            viewModel.hireServiceProvider(localContext) { profileViewModel.getHires() }
         }
     }
 }
