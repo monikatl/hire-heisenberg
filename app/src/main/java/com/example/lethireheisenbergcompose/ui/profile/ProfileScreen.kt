@@ -260,7 +260,7 @@ fun OperationsHistoryList(profileViewModel: ProfileViewModel = hiltViewModel()) 
             items(
                 if(setShowAllHistory.value)
                     history.value
-                else history.value.sortedBy { it.date }.reversed().take(3)
+                else history.value.take(3)
             ) { operation ->
                 OperationItem(operation)
             }
@@ -278,7 +278,7 @@ fun OperationItem(operation: Operation) {
         modifier = Modifier
             .clickable { }
             .fillMaxWidth()
-            .border(1.dp, Color.Red, CircleShape)
+            .border(1.dp, if(operation.type == OperationType.DEPOSIT) Color.Green else  Color.Red, CircleShape)
             .padding(16.dp)
 
     ) {

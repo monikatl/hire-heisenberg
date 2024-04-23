@@ -1,6 +1,8 @@
 package com.example.lethireheisenbergcompose.ui.profile
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.viewModelScope
 import com.example.lethireheisenbergcompose.MainViewModel
@@ -29,8 +31,6 @@ class ProfileViewModel @Inject constructor(
     private val operationRepository: OperationRepository,
     private val authRepository: AuthRepository
 ) : MainViewModel(userRepository, authRepository) {
-
-
 
     private var _hires = MutableStateFlow(emptyList<Hire>())
     private val hires: StateFlow<List<Hire>> get() = _hires
@@ -77,11 +77,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun getOperations() {
         viewModelScope.launch {
             user.value?.wallet?.id?.let {
                 operationRepository.getWalletOperations(it).collect { list ->
-                    _operationsHistory.value = list
+                    _operationsHistory.value = list.sortedBy { item -> item.date }.reversed()
                 }
             }
         }
