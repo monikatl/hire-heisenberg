@@ -43,7 +43,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -132,7 +131,7 @@ private fun ProfileHeader(
                 end = 16.dp
             )
             .clip(CircleShape),
-        painter = painterResource(id = R.drawable.icons8_google),
+        painter = painterResource(id = R.drawable.sad_sitting_svgrepo_com),
         contentScale = ContentScale.Crop,
         contentDescription = null
     )
@@ -182,10 +181,13 @@ fun WalletContainer(homeViewModel: HomeViewModel = hiltViewModel(), profileViewM
                 )
             }
             Row (modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                Text(
-                    text = wallet?.contents?.toString() ?: "0.0",
-                    fontSize = 35.sp
-                )
+                wallet?.contents?.let {
+                    Text(
+                        text = it.toString(),
+                        fontSize = 35.sp,
+                        color = if(it >= 0.0) Color.Black else Color.Red
+                    )
+                }
                 Icon(
                     painter = painterResource(id =
                     when(wallet?.currency?.name) {
@@ -465,7 +467,7 @@ fun PendingHireItem(hire: Hire, profileViewModel: ProfileViewModel = hiltViewMod
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
             }
-            LinearDeterminateIndicator(hire.duration.hourCounter)
+            //LinearDeterminateIndicator(hire.duration.hourCounter)
         }
 
         FilledTonalButton (text = "Zwolnij") { showDialog = true }

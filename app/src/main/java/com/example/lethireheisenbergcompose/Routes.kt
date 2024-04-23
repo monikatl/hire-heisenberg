@@ -15,6 +15,6 @@ object Screens {
 
 sealed class BottomNavItem(var title:String, var icon:Int, var screen_route:String){
     object Home : BottomNavItem("Home", R.drawable.my_favorites_svgrepo_com,"HomeScreen")
-    object Profile: BottomNavItem("Profil",R.drawable.user_social_svgrepo_com,"ProfileScreen")
+    object Profile: BottomNavItem("Profil",R.drawable.sad_sitting_svgrepo_com,"ProfileScreen")
 }
 

@@ -2,7 +2,6 @@ package com.example.lethireheisenbergcompose.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 
 @Parcelize
 data class Hire (
@@ -32,7 +31,7 @@ data class Hire (
                     Service.COOK,
                     serviceProvider,
                     user,
-                    Payment(counter, amount),
+                    Payment(counter, amount, Pay.ALL_DOWN),
                     HireStatus.valueOf(dbHire.status))
             }
         }

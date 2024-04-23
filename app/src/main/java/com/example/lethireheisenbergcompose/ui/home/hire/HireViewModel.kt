@@ -1,15 +1,7 @@
 package com.example.lethireheisenbergcompose.ui.home.hire
 
 import android.content.Context
-import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.lethireheisenbergcompose.MainViewModel
 import com.example.lethireheisenbergcompose.data.AuthRepository
@@ -18,19 +10,16 @@ import com.example.lethireheisenbergcompose.data.UserRepository
 import com.example.lethireheisenbergcompose.model.Payment
 import com.example.lethireheisenbergcompose.model.Hire
 import com.example.lethireheisenbergcompose.model.HireStatus
+import com.example.lethireheisenbergcompose.model.Pay
 import com.example.lethireheisenbergcompose.model.Service
 import com.example.lethireheisenbergcompose.model.ServiceProvider
-import com.example.lethireheisenbergcompose.ui.home.HomeViewModel
 import com.example.lethireheisenbergcompose.ui.profile.NotificationResolver
-import com.example.lethireheisenbergcompose.ui.profile.ProfileViewModel
 import com.example.lethireheisenbergcompose.utils.generateId
 import com.example.lethireheisenbergcompose.workers.scheduleTimerWork
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import java.util.UUID
 import javax.inject.Inject
 
@@ -53,22 +42,13 @@ class HireViewModel @Inject constructor(
     private var _hourCounter = MutableStateFlow(1)
     val hourCounter: StateFlow<Int> get() = _hourCounter
 
-    private fun observeNewWork(uuid: UUID, hire: Hire, context: Context, onComplete: () -> Unit) {
-        val workManager = WorkManager.getInstance()
-        val workInfoLiveData = workManager.getWorkInfoByIdLiveData(uuid)
-        workInfoLiveData.observeForever {
-            if(it.state.isFinished) {
-                endJob(context, hire)
-                onComplete.invoke()
-            }
-        }
-    }
-
+    private var _selectedOption = MutableStateFlow(Pay.ALL_DOWN)
+    private val selectedOption: StateFlow<Pay> get() = _selectedOption
 
     fun hireServiceProvider(context: Context, onComplete: () -> Unit) {
         viewModelScope.launch {
             serviceProvider.value?.let { sp ->
-                val payment= Payment(hourCounter.value, cost.value)
+                val payment = Payment(hourCounter.value, cost.value, selectedOption.value)
                 val hire = Hire(
                     generateId(),
                     sp.name,
@@ -81,12 +61,24 @@ class HireViewModel @Inject constructor(
                 hireRepository.saveHireData(hire)
 
                 // run worker manager
-                val hours = (payment.hourCounter * 1000).toLong()
+                val hours = payment.hours.toLong()
                 val amount = payment.amount
+                val rate = sp.rate
                 user.value?.userId?.let {
-                    val uuid = scheduleTimerWork(context, it, hours, amount)
+                    val uuid = scheduleTimerWork(context, it, hours, amount, rate, payment.type.ordinal)
                     observeNewWork(uuid, hire, context) { onComplete() }
                 }
+            }
+        }
+    }
+
+    private fun observeNewWork(uuid: UUID, hire: Hire, context: Context, onComplete: () -> Unit) {
+        val workManager = WorkManager.getInstance()
+        val workInfoLiveData = workManager.getWorkInfoByIdLiveData(uuid)
+        workInfoLiveData.observeForever {
+            if(it.state.isFinished) {
+                endJob(context, hire)
+                onComplete.invoke()
             }
         }
     }
@@ -100,35 +92,15 @@ class HireViewModel @Inject constructor(
     }
 
     private fun sendNotification(context: Context, name: String) {
-        NotificationResolver(context).showNotification("Zlecenie wykonane!", "Postać $name właśnie wykonała zadanie!")
+        // TODO
     }
 
     fun rehire(hire: Hire) {
-        val payment= Payment(hire.duration.hourCounter, hire.duration.amount)
-        val newHire = with(hire) {
-           Hire(
-               generateId(),
-               name,
-               service,
-               serviceProvider,
-               userId,
-               payment,
-               HireStatus.PENDING
-           )
-        }
-        hireRepository.saveHireData(newHire)
-        payForService()
+       // TODO
     }
 
     private fun payForService() {
-        viewModelScope.launch {
-            val wallet = user.value?.wallet
-            wallet?.let {
-                // pay all at start
-                it.draw(cost.value)
-                userRepository.updateUserWallet(authRepository.currentUserUid, it)
-            }
-        }
+        // TODO
     }
 
     fun updateCost() {
@@ -145,5 +117,9 @@ class HireViewModel @Inject constructor(
 
     fun setServiceProvider(serviceProvider: ServiceProvider) {
         _serviceProvider.value = serviceProvider
+    }
+
+    fun onOptionSelected(option: Pay) {
+        _selectedOption.value = option
     }
 }

@@ -33,7 +33,7 @@ class ProfileViewModel @Inject constructor(
 
 
     private var _hires = MutableStateFlow(emptyList<Hire>())
-    val hires: StateFlow<List<Hire>> get() = _hires
+    private val hires: StateFlow<List<Hire>> get() = _hires
 
     private var _pendingHires = MutableStateFlow(emptyList<Hire>())
     val pendingHires: StateFlow<List<Hire>> get() = _pendingHires
@@ -41,7 +41,7 @@ class ProfileViewModel @Inject constructor(
     private var _historyHires = MutableStateFlow(emptyList<Hire>())
     val historyHires: StateFlow<List<Hire>> get() = _historyHires
 
-    var _operationsHistory = MutableStateFlow(emptyList<Operation>())
+    private var _operationsHistory = MutableStateFlow(emptyList<Operation>())
     val operationHistory: StateFlow<List<Operation>> get() = _operationsHistory
 
     init {

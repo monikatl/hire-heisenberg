@@ -16,6 +16,7 @@ import com.example.lethireheisenbergcompose.ui.login.LoginScreen
 import com.example.lethireheisenbergcompose.ui.profile.ProfileScreen
 import com.example.lethireheisenbergcompose.ui.signup.SignUpScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RootNavGraph(
     navController: NavHostController = rememberNavController()

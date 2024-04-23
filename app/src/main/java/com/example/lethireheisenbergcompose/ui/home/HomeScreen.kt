@@ -16,7 +16,10 @@ See the License for the specific language governing permissions and
 limitations under the License.*/
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -86,6 +89,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(){
@@ -201,14 +205,7 @@ fun HomeTopBar(homeViewModel: HomeViewModel = hiltViewModel()) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            Color(android.graphics.Color.parseColor("#ff00ff")),
-                        )
-                        .clip(CircleShape)
-                ) {}
+                Image(painter = painterResource(id = R.drawable.sad_sitting_svgrepo_com), contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = user.value?.email ?: "")
             }
@@ -285,6 +282,7 @@ fun ServiceProviderItem(serviceProvider: ServiceProvider, categogory: Service) {
         Column(Modifier.padding(8.dp)) {
            AsyncImage(
                 model = serviceProvider.figure?.img,
+                placeholder = painterResource(id = R.drawable.sad_sitting_svgrepo_com) ,
                 contentDescription = serviceProvider.figure?.name,
                 modifier = Modifier
                     .width(150.dp)
