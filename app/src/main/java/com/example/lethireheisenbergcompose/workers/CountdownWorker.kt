@@ -58,14 +58,14 @@ class CountdownWorker @AssistedInject constructor(
     }
 
     private suspend fun hourlyPayUp(hours: Long, userId: String?, amount: Double) {
-        for (hour in 0..hours) {
+        for (hour in 0..<hours) {
             pay(amount, userId)
             delay(1000)
         }
     }
 
     private suspend fun hourlyPayDown(hours: Long, userId: String?, amount: Double) {
-        for (hour in 0..hours) {
+        for (hour in 0..<hours) {
             delay(1000)
             pay(amount, userId)
         }
@@ -158,7 +158,7 @@ class CountdownWorkerFactory @Inject constructor(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters
-    ): ListenableWorker? {
+    ): ListenableWorker {
         return CountdownWorker(appContext, workerParameters, userRepository, operationRepository)
     }
 }
